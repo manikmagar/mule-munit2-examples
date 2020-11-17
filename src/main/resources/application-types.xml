@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="user" format="json">
+      <types:shape format="weave" example="examples/user.json"><![CDATA[%dw 2.0
+
+type user = {|
+  userId: Number {"typeId": "int"}, 
+  userName: String, 
+  active: Boolean
+|} {"example": "{\\\"userId\\\":1234,\\\"userName\\\":\\\"manik\\\",\\\"active\\\":true}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#37f253d7-c9f2-4a7a-bd86-5745f93a26df">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="user"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

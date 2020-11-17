@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<munit:config name="01-core-test-test-suite.xml" />
+	<munit:test name="01-core-test-test-suite-01-core-test-get-usersTest-Invalid_Argument" doc:id="ca360ac0-0488-4684-8d3b-7cbc8969d69b" description="Invalid argument for user id and error contains description" expectedErrorType="APP:INVALID_ARGUMENT" expectedErrorDescription="User id must not be null" doc:description="Using err">
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to 01-core-test-get-users" doc:id="6b661ef6-74cf-41e7-a31c-0fffe661a696" name="01-core-test-get-users"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="01-core-test-test-suite-01-core-test-get-usersTest-positive" doc:id="869694ac-6bcc-4d71-a514-e6452a6e3043" description="Gets user from http" doc:description="Using err">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when http" doc:id="bf8dd877-fd37-4492-9986-e23e2da1b71e" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="GET" attributeName="method" />
+					<munit-tools:with-attribute whereValue="/users/{userId}" attributeName="path" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json --- {'userName': 'manik'}]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy http" doc:id="a7795c45-a98c-4f97-a8d6-8239de0070b9" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="GET" attributeName="method" />
+					<munit-tools:with-attribute whereValue="/users/{userId}" attributeName="path" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert-equals doc:name="Assert equals" doc:id="c1929f9a-f6a3-4e94-a450-03ee0f1b12dd" actual="#[vars.userId]" expected="#[1234]" message="User id before calling http"/>
+				</munit-tools:before-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<set-variable value="#[1234]" doc:name="Set Variable" doc:id="62aab7a1-1cec-4ae3-b8fd-02b609a70cf4" variableName="userId"/>
+			<flow-ref doc:name="Flow-ref to 01-core-test-get-users" doc:id="00e54fd9-a7a0-4c63-a987-2402c4f78647" name="01-core-test-get-users"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify http call" doc:id="72565312-0304-4efc-9020-f07771abede8" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="GET" attributeName="method" />
+					<munit-tools:with-attribute whereValue="/users/{userId}" attributeName="path" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<ee:transform doc:name="Transform Message" doc:id="035eda2c-c780-44e3-bd56-a941b387cd4d" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="expectedPayload" ><![CDATA[%dw 2.0
+output application/java
+---
+{'userId': 1234, 'userName': 'manik'}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<munit-tools:assert-equals doc:name="Assert response payload" doc:id="ab5ba15e-29c1-4a28-97f4-94af4da01b11" actual="#[payload]" expected="#[vars.expectedPayload]" message="Returned user object"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="01-core-test-test-suite-01-core-test-get-usersTest-positive-alternate" doc:id="c7376aac-5f26-4929-a670-07232758d83a" description="Gets the user from file and verifies with expression assert" doc:description="Using err">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when http" doc:id="79908f32-dc3f-411d-a4c3-0b1fa7c4c760" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="GET" attributeName="method" />
+					<munit-tools:with-attribute whereValue="/users/{userId}" attributeName="path" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[MunitTools::getResourceAsStream("test-data/user.json")]' mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy http" doc:id="ab769251-7e21-44f7-8e39-33227bff9bd5" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="GET" attributeName="method" />
+					<munit-tools:with-attribute whereValue="/users/{userId}" attributeName="path" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert-equals doc:name="Assert equals" doc:id="16cc89c5-01ad-46fa-9ecb-36d851ed9396" actual="#[vars.userId]" expected="#[1234]" message="User id before calling http"/>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert expression" doc:id="48b98a56-58ec-4082-a7b4-24b4d2c47aa6" >
+						<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must equalToResource("test-data/user.json", "application/json")]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<set-variable value="#[1234]" doc:name="Set Variable" doc:id="89ef96c3-c73d-4747-aad8-bd6d794ef333" variableName="userId"/>
+			<flow-ref doc:name="Flow-ref to 01-core-test-get-users" doc:id="b496a6ce-1d55-499d-9051-6e1e456d6276" name="01-core-test-get-users"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify http call" doc:id="d53c82df-5f57-47a4-8d04-4b9823914f77" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="GET" attributeName="method" />
+					<munit-tools:with-attribute whereValue="/users/{userId}" attributeName="path" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<ee:transform doc:name="Transform Message" doc:id="289f9d53-e0e4-47a9-89d2-4189294d1ec7" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="expectedPayload" ><![CDATA[%dw 2.0
+output application/java
+---
+{'userId': 1234, 'userName': 'manik'}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<munit-tools:assert-equals doc:name="Assert response payload" doc:id="55f3406a-f896-4e53-9ccb-f83593a21f8d" actual="#[payload]" expected="#[vars.expectedPayload]" message="Returned user object"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="01-core-test-test-suite-01-core-test-get-usersTest-user-not-found" doc:id="d8264f0f-4604-4c15-bc54-bccc42dc2ab0" description="When user not found" doc:description="Using err">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when http" doc:id="e92b5967-cfcf-4a16-bd49-d16e0f272ca0" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="GET" attributeName="method" />
+					<munit-tools:with-attribute whereValue="/users/{userId}" attributeName="path" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="HTTP:NOT_FOUND" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<set-variable value="#[1234]" doc:name="Set Variable" doc:id="1b829222-4207-470e-93f3-c39971f28202" variableName="userId"/>
+			<flow-ref doc:name="Flow-ref to 01-core-test-get-users" doc:id="b7b7bc2a-424f-49db-96f3-d487c1de3ead" name="01-core-test-get-users"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify http call" doc:id="f23d1078-4b13-4036-9338-3985e6142f2d" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="GET" attributeName="method" />
+					<munit-tools:with-attribute whereValue="/users/{userId}" attributeName="path" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<ee:transform doc:name="Transform Message" doc:id="a53b9328-2ab7-49b1-9f3e-8faf908441a3" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="expectedPayload" ><![CDATA[%dw 2.0
+output application/java
+---
+{error: 'User not found'}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="48c3571e-88be-4047-a1fb-8b24852f1c81" expression="#[payload]" is="#[MunitTools::withMediaType('application/java')]" message="Returned user error object"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="01-core-test-test-suite-01-core-test-create-usersTest" doc:id="f404711d-bfe4-4cd4-9118-4a0fc303bea0" description="Test">
+		<munit:execution >
+			<ee:transform doc:name="Transform Message" doc:id="fc33e66c-9624-414d-81b2-575cde5a381c" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	userName: 'manik'
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow-ref to 01-core-test-create-users" doc:id="f5ffccb4-0fe4-4f02-b268-5c8e0d11e793" name="01-core-test-create-users"/>
+		</munit:execution>
+		<munit:validation >
+			<ee:transform doc:name="Transform Message" doc:id="34957d7e-b007-4824-968f-65eb16afcf8d" >
+				<ee:variables >
+					<ee:set-variable variableName="expectedPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	userId: 1234,
+	userName: payload.userName
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<munit-tools:assert-that doc:name="Assert that" doc:id="5328f172-0b77-4373-bcf8-22516dc500ed" message="Returned user error object" expression="#[payload]" is="#[MunitTools::equalTo(vars.expectedPayload)]" />
+		</munit:validation>
+	</munit:test>
+</mule>

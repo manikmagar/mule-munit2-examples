@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<vm:config name="VM_Config" doc:name="VM Config" doc:id="171f96ed-0e6d-4e9e-8207-e5de9e8c333f" >
+		<vm:queues >
+			<vm:queue queueName="test-queue-1" />
+			<vm:queue queueName="test-queue-2" />
+		</vm:queues>
+	</vm:config>
+	<sub-flow name="vm-processor-flow" doc:id="cc2ea5cb-ea82-46ca-be98-d964c42de32f" >
+		<logger level="INFO" doc:name="Logger" doc:id="08953a7c-ce4d-42b7-ba1d-8a5162e0c61a" message="#['Processing VM Message']"/>
+		<ee:transform doc:name="Transform Message" doc:id="c52f9c0e-9d8c-407b-803d-bc0bfd41bc6f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json indent=false
+---
+{
+	foo: 'bar',
+	content: payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<file:write doc:name="Write" doc:id="9002fb0d-8370-4136-82aa-ab0448bdeb06" path="#['/tmp/bar.txt']"/>
+	</sub-flow>
+	<flow name="vm-queue-demoFlow" doc:id="4744232e-c85b-43fe-bd90-10dfbf20a6f2" >
+		<vm:listener doc:name="Listener" doc:id="7ec7aac4-9337-418c-9e1c-0cb81e118318" config-ref="VM_Config" queueName="test-queue-1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="6ff4b5a9-5b0e-4ad6-bd9b-686b8cf0a2a9" message="#['Received messasge on ' ++ attributes.queueName]"/>
+		<flow-ref doc:name="Flow Reference vm-processor-flow" doc:id="ffd6e9b8-002b-4398-a78e-53504f5bef26" name="vm-processor-flow"/>
+		<vm:publish queueName="test-queue-2" doc:name="Publish" doc:id="d04e660f-34a0-432c-b563-cad2265f9eab" config-ref="VM_Config"/>
+		<logger level="INFO" doc:name="Logger" doc:id="dd7ccc5f-3043-43a9-ae7e-c8b111f80631" message="#['Sent message to next queue ']"/>
+	</flow>
+</mule>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    <munit:config name="test-api-apikit-test.xml" />
+    <http:request-config name="HTTP_Request_Configuration" basePath="/api">
+        <http:request-connection host="localhost" port="${test.api.port}" />
+    </http:request-config>
+    <munit:dynamic-port propertyName="test.api.port" />
+    <munit:test name="put:\users\(userId):test-api-config---FlowTest" description="Verifying functionality of [put:\users\(userId):test-api-config--]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="test-api-main" />
+            <munit:enable-flow-source value="put:\users\(userId):test-api-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-variable variableName="userId" value="#['null']" doc:name="userId" />
+        </munit:behavior>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="PUT" path="#['/users/$(vars.userId)']" />
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(200)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is " />
+        </munit:validation>
+    </munit:test>
+    <munit:test name="get:\users:test-api-config---FlowTest" description="Verifying functionality of [get:\users:test-api-config--]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="test-api-main" />
+            <munit:enable-flow-source value="get:\users:test-api-config" />
+        </munit:enable-flow-sources>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="GET" path="/users" />
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(200)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is " />
+        </munit:validation>
+    </munit:test>
+    <munit:test name="post:\users:test-api-config---FlowTest" description="Verifying functionality of [post:\users:test-api-config--]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="test-api-main" />
+            <munit:enable-flow-source value="post:\users:test-api-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior >
+			<ee:transform doc:name="Transform Message" doc:id="af44f919-018d-422e-b6e0-b57ac20e8ea5" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	userName: 'manik'
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</munit:behavior>
+		<munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="POST" path="/users" />
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(200)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is " />
+        </munit:validation>
+    </munit:test>
+    <munit:test name="get:\users\(userId):test-api-config---FlowTest" description="Verifying functionality of [get:\users\(userId):test-api-config--]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="test-api-main" />
+            <munit:enable-flow-source value="get:\users\(userId):test-api-config" />
+        </munit:enable-flow-sources>
+        <munit:behavior>
+            <set-variable variableName="userId" value="#['1234']" doc:name="userId" />
+        </munit:behavior>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="GET" path="#['/users/$(vars.userId)']" />
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(200)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is " />
+        </munit:validation>
+    </munit:test>
+</mule>

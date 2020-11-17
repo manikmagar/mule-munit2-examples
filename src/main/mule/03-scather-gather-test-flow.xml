@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	
+	<sub-flow name="scather-gather-test-flow-get-all-flights" doc:id="55345a68-8a9d-4509-8dfb-f6051e058b59" >
+		<try doc:name="Try" doc:id="6c62282f-8c09-4b34-b773-093dab20e200" >
+			<scatter-gather doc:name="Scatter-Gather" doc:id="c0fddcd7-3588-4c3b-9325-4c08b25a5008">
+			<route>
+				<flow-ref doc:name="parameterization-test-flow-get-united-flights" doc:id="5104108e-e04c-4219-9a41-cafb08be169d" name="parameterization-test-flow-get-united-flights" />
+			</route>
+			<route>
+				<flow-ref doc:name="parameterization-test-flow-get-delta-flights" doc:id="8c13709e-aecc-49e5-b162-b1970ed303d3" name="parameterization-test-flow-get-delta-flights" />
+			</route>
+			<route>
+				<flow-ref doc:name="parameterization-test-flow-get-spirit-flights" doc:id="a7fa3137-a12a-40f5-9785-ee2745004bd2" name="parameterization-test-flow-get-spirit-flights" />
+			</route>
+		</scatter-gather>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f0aa41f6-08c8-4a84-892c-0e86b262dc78" doc:description="When error occurs, it sets the successful route payload and continues processing.">
+					<logger level="INFO" doc:name="Logger" doc:id="190c7f16-9d2f-4db9-8f15-1f094539d297" message="#['Number of routes failed - ' ++ (sizeOf(error.errorMessage.payload.failures default []))]"/>
+					<ee:transform doc:name="Transform Message" doc:id="dc39b1ea-8358-4877-90b7-86fa39c20ec4" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+error.errorMessage.payload.results]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Transform Message" doc:id="c40fff88-805b-4389-8b71-31229f6b7734" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+flatten((payload pluck $).payload)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="38bd117c-b2c9-4135-9b0a-7f9789226236" message="#['Number of flights found - ' ++ sizeOf(payload default [])]"/>
+	</sub-flow>	
+	
+</mule>

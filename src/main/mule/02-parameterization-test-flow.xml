@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="parameterization-test-flow-get-united-flights" doc:id="772d8f50-fb6e-4989-9e45-5db3dbf4e11a" >
+		<ee:transform doc:name="Transform Message" doc:id="bcb7a24a-c814-47d2-a887-5c57c16d1274" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	flightId: 1,
+	airlineCode: 'UAL'
+},{
+	flightId: 2,
+	airlineCode: 'UAL'
+},{
+	flightId: 3,
+	airlineCode: 'UAL'
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="parameterization-test-flow-get-delta-flights" doc:id="a37c079d-ba55-4847-ac1b-d00a11526a7a" >
+		<ee:transform doc:name="Transform Message" doc:id="f1213b89-629e-45c7-b45d-58ae552d10ec" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	flightId: 1,
+	airlineCode: 'DAL'
+},{
+	flightId: 2,
+	airlineCode: 'DAL'
+},{
+	flightId: 3,
+	airlineCode: 'DAL'
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="parameterization-test-flow-get-spirit-flights" doc:id="dcfd5cdd-93be-4f7d-89d9-33e0ef81c465" >
+		<ee:transform doc:name="Transform Message" doc:id="bc7681d8-735d-4c3c-bfee-72e072a9ae95" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	flightId: 1,
+	airlineCode: 'NKS'
+},{
+	flightId: 2,
+	airlineCode: 'NKS'
+},{
+	flightId: 3,
+	airlineCode: 'NKS'
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<flow name="parameterization-test-flow-get-flights" doc:id="b528e9fe-c4f4-4089-90f7-0482a1aa381d" >
+		<logger level="INFO" doc:name="Logger" doc:id="014cc7f4-631b-4bc7-9911-595cd359b33d" message="#['Get flights for airline - ' ++ (vars.airlineCode default 'All')]"/>
+		<choice doc:name="Choice" doc:id="021f83a0-fa5e-4dd5-a669-a5dcb38c9067" >
+			<when expression="#[vars.airlineCode == 'UAL']">
+				<flow-ref doc:name="Flow Reference" doc:id="ef2ae6a7-1e2e-4359-89f8-2f0b122f73b7" name="parameterization-test-flow-get-united-flights"/>
+			</when>
+			<when expression="#[vars.airlineCode == 'DAL']">
+				<flow-ref doc:name="Flow Reference" doc:id="301bb098-fa1e-49a2-8979-85dc123dcb61" name="parameterization-test-flow-get-delta-flights"/>
+			</when>
+			<when expression="#[vars.airlineCode == 'NKS']">
+				<flow-ref doc:name="Flow Reference" doc:id="b127982a-121b-4856-832e-60b4b5b6ef96" name="parameterization-test-flow-get-spirit-flights" />
+			</when>
+			<otherwise >
+				<flow-ref doc:name="scather-gather-test-flow-get-all-flights" doc:id="5c766b8b-d2bd-486c-8d3b-43b364468803" name="scather-gather-test-flow-get-all-flights"/>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

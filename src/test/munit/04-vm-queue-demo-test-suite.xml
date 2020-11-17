@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+	<munit:config name="vm-queue-demo-test-suite.xml" />
+	<munit:test name="vm-queue-demo-test-suite-vm-processor-flowTest" doc:id="41e1456f-5724-4481-b574-768562d4f701" description="Writes to a file">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="736c2436-27c1-4498-89cc-aa1aad593c2b" processor="file:write">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="/tmp/bar.txt" attributeName="path" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<set-payload value='#[output application/json --- {"name": "Manik"}]' doc:name="Set Payload" doc:id="5dc21c75-0ea4-40db-84f4-510e0cac20da" />
+			<flow-ref doc:name="Flow-ref to vm-processor-flow" doc:id="79309b52-e18b-47f8-a76b-05ba1d573811" name="vm-processor-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify file is called" doc:id="8680ab8d-152a-4d09-a906-22f1b1fff751" processor="file:write">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="/tmp/bar.txt" attributeName="path" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="04-vm-queue-demo-test-suite-vm-queue-demoFlowTest-posting-to-next-queue-mock" doc:id="121fa909-b52d-4c8f-9bfc-be812cc50e4a" description="Posts message to next queue for processing (Mock Publish)">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when vm-processor-flow" doc:id="076d8af9-6b92-4aa3-acf2-f506c39c3beb" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="vm-processor-flow" attributeName="name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[%dw 2.0
+output application/json indent=false
+---
+{
+	foo: 'bar',
+	content: 'dummy'
+}]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="118aa232-4b1a-4657-bdf9-d2a315e51cab" processor="vm:publish">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="test-queue-2" attributeName="queueName" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="c26f663e-21b6-4bcf-bad7-ca6fddb4a1f3" >
+				<munit:payload value="#['dummy']" />
+				<munit:attributes value="#[output application/java --- {'queueName': 'test-queue-1'}]" mediaType="application/java" />
+			</munit:set-event>
+			
+			<flow-ref doc:name="Flow-ref to vm-queue-demoFlow" doc:id="cb80d688-c6b7-403e-924e-13fddc5eca0d" name="vm-queue-demoFlow"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="f58575a5-4489-4ecc-a649-dac2467c8a93" processor="vm:publish">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="test-queue-2" attributeName="queueName" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+<munit:test name="04-vm-queue-demo-test-suite-vm-queue-demoFlowTest-posting-to-next-queue" doc:id="4a0ca843-638b-4201-a3ac-051360cc6107" description="Posts message to next queue for processing">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when vm-processor-flow" doc:id="d703bc1b-39d5-4157-b8b1-0d676ecb2d47" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="vm-processor-flow" attributeName="name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[%dw 2.0
+output application/json indent=false
+---
+{
+	foo: 'bar',
+	content: 'dummy'
+}]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="215a3008-464f-4572-bcfe-8710ebf63ed3" >
+				<munit:payload value="#['dummy']" />
+				<munit:attributes value="#[output application/java --- {'queueName': 'test-queue-1'}]" mediaType="application/java" />
+			</munit:set-event>
+			
+			<flow-ref doc:name="Flow-ref to vm-queue-demoFlow" doc:id="48d4d455-7ad4-450b-ba11-7afdf83d75bb" name="vm-queue-demoFlow"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="db2f01a0-78ee-404f-8972-337a6098a182" processor="vm:publish">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="test-queue-2" attributeName="queueName" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<vm:consume queueName="test-queue-2" doc:name="Consume" doc:id="d98cdb0a-3ab4-4c54-93ef-b447e0dd4aa8" config-ref="VM_Config"/>
+			<ee:transform doc:name="Transform Message" doc:id="d6b30048-4bb9-4a14-a8c8-3ede4fd32d29" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="expectedPayload" ><![CDATA[%dw 2.0
+output application/json indent=false
+---
+{
+	foo: 'bar',
+	content: 'dummy'
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<munit-tools:assert doc:name="Assert expression" doc:id="fac453bb-01b8-4e0e-89a7-9b3e7e9e042d" message="Payload from VM">
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must equalTo(vars.expectedPayload)]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+</mule>

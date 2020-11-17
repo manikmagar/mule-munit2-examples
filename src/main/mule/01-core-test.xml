@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="d0db3074-177e-4952-a52c-4d9a290aad07" />
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="e56491ae-cc6e-4ce1-a668-bb4ce2240e81" >
+		<http:request-connection host="example.com" port="80" />
+	</http:request-config>
+	<sub-flow name="01-core-test-create-users" doc:id="37f253d7-c9f2-4a7a-bd86-5745f93a26df" >
+		<set-variable value="#[uuid()]" doc:name="Set Variable" doc:id="3ca47ca3-6df9-4c2b-b101-966438af1497" variableName="requestId"/>
+		<logger level="DEBUG" doc:name="Logger" doc:id="ee9cc0f5-8a4b-4073-be0d-cc6e777d9dcf" message="#[output application/java --- 'Got creation for user name ' ++ payload.userName ++ ' for request ' ++ vars.requestId]"/>
+		<ee:transform doc:name="Transform Message" doc:id="01d58dd6-bae2-414e-875d-ae5b9867127a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	userId: 1234,
+	userName: payload.userName
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="01-core-test-get-users" doc:id="026b20c4-72be-4bf7-a229-b86abc04816d" >
+		<logger level="INFO" doc:name="Logger" doc:id="6fbb5288-498b-430d-aa16-cdc01f673eda" message="#['Simple flow']"/>
+		<validation:is-not-null doc:name="UserId Is not null" doc:id="43a09a92-2e90-476e-bd27-d63ee9270a26" config-ref="Validation_Config" value="#[vars.userId]" message="#['User id must not be null. Please retry with valid user id']">
+			<error-mapping sourceType="VALIDATION:NULL" targetType="APP:INVALID_ARGUMENT" />
+		</validation:is-not-null>
+		<try doc:name="Try" doc:id="f7e60e1a-12f3-41ce-8e18-b38f4b6f8ec6" >
+			<http:request method="GET" doc:name="Request" doc:id="d0b06aea-ef2d-472e-9104-fd4bdbeae869" config-ref="HTTP_Request_configuration" path="/users/{userId}">
+			<error-mapping sourceType="HTTP:NOT_FOUND" targetType="APP:USER_NOT_FOUND" />
+				<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"userId" : vars.userId
+}]]]></http:uri-params>
+		</http:request>
+			<ee:transform doc:name="Transform Message" doc:id="891b2ff2-8d56-4cab-b505-43de9bdd98c2">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"userId": vars.userId,
+	"userName": payload.userName
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			<error-handler >
+				<on-error-continue enableNotifications="false" logException="false" doc:name="On Error Continue" doc:id="5458ecbd-6cc8-44c5-820c-38bd7f950dd0" type="APP:USER_NOT_FOUND">
+					<ee:transform doc:name="Transform Message" doc:id="4eee93f4-1152-4488-b2e2-63dfe9387387" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	error: "User not found"
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</sub-flow>
+</mule>

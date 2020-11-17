@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="scather-gather-test-flow-test-suite.xml" />
+	<munit:test name="scather-gather-test-flow-test-suite-scather-gather-test-flow-get-all-flightsTest" doc:id="1480277f-eeb6-4b96-b94f-e72294664b1f" description="Calls flows to get all flights">
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to scather-gather-test-flow-get-all-flights" doc:id="33d5427a-7eba-4bc8-b29f-5643b277bc28" name="scather-gather-test-flow-get-all-flights"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="5011c025-a74e-4ce1-af89-6fd168b5dc86" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="parameterization-test-flow-get-united-flights" attributeName="name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="b6645cc9-af7b-4445-b4b6-d49d3a0ecfe6" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="parameterization-test-flow-get-delta-flights" attributeName="name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="e39714d4-5c96-4231-b685-a6519dd75167" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="parameterization-test-flow-get-spirit-flights" attributeName="name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="bc60e82d-b02f-4b99-ad87-1709086a5111" actual="#[sizeOf(payload default [])]" expected="#[9]" message="Number of Flights"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="scather-gather-test-flow-test-suite-scather-gather-test-flow-get-all-flightsTest-UAL-Timeout" doc:id="b0eab484-68b6-4fdc-82c4-f9e2db5e94d3" description="United route times out">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="a1939095-0fea-4a0a-ab14-76f93efcb47a" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="parameterization-test-flow-get-united-flights" attributeName="name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="MULE:TIMEOUT" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to scather-gather-test-flow-get-all-flights" doc:id="eed7f712-d9db-4193-996b-02cf5ba7cfa5" name="scather-gather-test-flow-get-all-flights"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="0a246d1b-46ba-450f-8e1e-b64df73a4538" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="parameterization-test-flow-get-united-flights" attributeName="name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="3a8a387e-ea09-4471-ada0-37ed6cdfac7d" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="parameterization-test-flow-get-delta-flights" attributeName="name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="3c7404c8-24d7-436a-9316-d8102cba8077" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="parameterization-test-flow-get-spirit-flights" attributeName="name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="f1ab286f-d68b-4971-ada3-11646c51fd80" actual="#[sizeOf(payload default [])]" expected="#[6]" message="Number of non-united-Flights"/>
+		</munit:validation>
+	</munit:test>
+
+</mule>
