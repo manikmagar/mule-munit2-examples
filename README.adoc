@@ -1,1 +1,9 @@
-# mule-munit2-examples
+# Mule MUnit 2 Examples
+
+This project contains various examples of MUnit 2 test examples.
+
+- 01-core-test.xml: Tests with core munit components such as mock, spy, verify, matchers etc.
+- 02-parameterization-test-flow.xml: Demonstrates testing flows using parameterization feature.
+- 03-scather-gather-test-flow-test-suite.xml: How to test scather gather router.?
+- 04-vm-queue-demo-test-suite.xml: Some examples of flows using VM queues.
+- test-api.xml: Examples of API Kit router.
