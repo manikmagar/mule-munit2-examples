@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<munit:config name="05-schema-validations-test-suite.xml" />
+	<munit:test name="05-schema-validations-test-suite-validate-json-schemaTest-positive" doc:id="ec7d7e7f-1214-451b-8132-67241b966ea3" description="Test Successful Schema Validation">
+		<munit:execution >
+			<ee:transform doc:name="Transform Message" doc:id="a11ac868-33d8-46f5-b12e-b278e11f1b9e" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "age": 21
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow-ref to validate-json-schema" doc:id="b32e4a26-247f-4768-87e2-601945d1ee28" name="validate-json-schema"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="05-schema-validations-test-suite-validate-json-schemaTest-negative" doc:id="9098e615-1e23-44e4-a105-83ed3a096c93" description="Test validation failure by expected error type"  expectedErrorType="JSON:SCHEMA_NOT_HONOURED">
+			<munit:execution >
+			<ee:transform doc:name="Transform Message" doc:id="1fad2b23-0dc9-4113-bf4c-af3f9a07d4e6" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "age": "21"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow-ref to validate-json-schema" doc:id="42d426f2-1be3-4ce0-8c6f-2e1e441afb9d" name="validate-json-schema"/>
+		</munit:execution>
+	</munit:test>
+
+</mule>
